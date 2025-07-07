@@ -1,0 +1,70 @@
+import os
+import numpy as np
+from PIL import Image  # Import Image class from PIL
+
+
+def preprocess_image(image_path):
+    """
+    Loads and preprocesses an image.
+
+    Args:
+        image_path (str): Path to the image file.
+
+    Returns:
+        numpy.ndarray: Preprocessed image as a NumPy array.
+    """
+
+    # Load image using PIL (adjust for your format)
+    img = Image.open(image_path)
+
+    # Preprocessing steps (e.g., resize, normalize, grayscale)
+    img = img.resize((224, 224))  # Example resizing
+    img = np.array(img) / 255.0  # Example normalization
+
+    return img
+
+
+dataset_path = r'C:/Users/Jawairia Yousaf\Desktop/d-final-face/dataSet'  # Assuming forward slashes
+
+# Assuming all images are in the same folder
+image_paths = [os.path.join(dataset_path, filename) for filename in os.listdir(dataset_path)]
+
+# Preprocess images
+images = [preprocess_image(path) for path in image_paths]
+
+label_path = r'C:\Users\Jawairia Yousaf\Desktop\d-final-face\dataset_info.csv'  # Replace with actual path
+
+
+def extract_label(text):
+    """
+    Extracts the label from a string (assuming name followed by delimiter and label).
+
+    Args:
+        text (str): The string containing name and label.
+
+    Returns:
+        float: The extracted label as a float (assuming numerical).
+    """
+
+    try:
+        return float(text.split('.')[-1])  # Split by delimiter and get the last part
+    except ValueError:
+        print(f"Error: Could not convert label '{text}' to float.")
+        return np.nan  # Or return a specific value to indicate errors
+
+
+# Option 1: Use a custom function to extract labels
+labels = [extract_label(line.strip()) for line in open(label_path)]
+
+
+# Option 2: Use pandas for more advanced CSV handling (if applicable)
+# import pandas as pd
+#
+# df = pd.read_csv(label_path, converters={'label': lambda x: float(x.split('.')[-1])})  # Custom converter for label column
+# labels = df['label']  # Assuming the label column is named 'label' (adjust if different)
+
+# Assuming you have a dictionary named 'data' to store images and labels
+data = {'images': images, 'labels': labels}
+
+# Save data in compressed .npz format
+np.savez_compressed('ORL_faces.npz', **data)
